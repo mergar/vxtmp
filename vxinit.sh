@@ -62,7 +62,7 @@ sqllist "${MESH_NET}" _s1 _s2 _s3 _s4
 #MY_TUN2="${_s1}.${_s2}.${_s3}.2${MY_ID}"
 #MY_TUN3="${_s1}.${_s2}.${_s3}.3${MY_ID}"
 
-cat <<EOF
+cat > map.txt <<EOF
 MY ID: ${MY_ID}
 MY VXLAN IP: ${MY_VXLAN_IP}
 EOF
@@ -70,16 +70,18 @@ EOF
 tunnels=0
 for i in ${NEIGHBOR_NODES_ID}; do
 	tunnels=$(( tunnels + 1 ))
-	printf "tunnel${tunnels}: "
+	printf "tunnel${tunnels}: " >> map.txt
 
 	MY_TUN="${_s1}.${_s2}.${_s3}.${MY_ID}${i}"
 	REMOTE_VXLAN_IP=$( get_vxlan_ip ${i} )
 	[ -z "${REMOTE_VXLAN_IP}" ] && err 1 "Unable to determine remote VXLAN for node id $i"
 	STR="ifconfig vxlan create vxlanid 42 vxlanlocal ${MY_VXLAN_IP} vxlanremote ${REMOTE_VXLAN_IP} inet ${MY_TUN} mtu ${MTU} up"
 	REMOTE_TUN="${_s1}.${_s2}.${_s3}.${i}${MY_ID}"
-	echo "${STR}"
-	echo "Remote TUN IP: ${REMOTE_TUN}"
+	echo "${STR}" >> map.txt
+	echo "Remote TUN IP: ${REMOTE_TUN}" >> map.txt
 done
+
+cat map.txt
 
 #MY_TUN_IP="10.10.10.2/24"
 
