@@ -58,9 +58,6 @@ fi
 
 sqllistdelimer="."
 sqllist "${MESH_NET}" _s1 _s2 _s3 _s4
-#MY_TUN1="${_s1}.${_s2}.${_s3}.${MY_ID}"
-#MY_TUN2="${_s1}.${_s2}.${_s3}.2${MY_ID}"
-#MY_TUN3="${_s1}.${_s2}.${_s3}.3${MY_ID}"
 
 cat > map.txt <<EOF
 MY ID: ${MY_ID}
@@ -73,10 +70,14 @@ for i in ${NEIGHBOR_NODES_ID}; do
 
 	vxlan_id=$( printf "${i}\n${MY_ID}\n" | sort | xargs | tr -d ' ' )
 
-	if [ ${i} -gt ${MY_ID} ]; then
-		my_ip=$(( ${vxlan_id} - 1 ))
-	else
+	vxlan_id=$(( vxlan_id / 2 ))
+
+	x=$(( vxlan_id % 2 ))
+
+	if [ "${x}" != "0" ]; then
 		my_ip=${vxlan_id}
+	else
+		my_ip=$(( ${vxlan_id} + 1 ))
 	fi
 
 	echo "tunnel${tunnels}: ${vxlan_id}" >> map.txt
@@ -90,10 +91,10 @@ for i in ${NEIGHBOR_NODES_ID}; do
 	echo "Remote TUN IP: ${REMOTE_TUN}" >> map.txt
 
 	# run
-	VXLAN=$( ${STR} )
-	ifconfig ${VXLAN} down
-	ifconfig ${VXLAN} up
-	echo "${VXLAN}"
+#	VXLAN=$( ${STR} )
+#	ifconfig ${VXLAN} down
+#	ifconfig ${VXLAN} up
+#	echo "${VXLAN}"
 done
 
 cat map.txt
