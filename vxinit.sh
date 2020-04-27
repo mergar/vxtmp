@@ -60,8 +60,8 @@ sqllistdelimer="."
 sqllist "${MESH_NET}" _s1 _s2 _s3 _s4
 
 cat > map.txt <<EOF
-MY ID: ${MY_ID}
-MY VXLAN IP: ${MY_VXLAN_IP}
+MY_ID="${MY_ID}"
+MY_VXLAN_IP="${MY_VXLAN_IP}"
 EOF
 
 tunnels=0
@@ -70,21 +70,28 @@ for i in ${NEIGHBOR_NODES_ID}; do
 
 	vxlan_id=$( printf "${i}\n${MY_ID}\n" | sort | xargs | tr -d ' ' )
 
-	echo "tunnel${tunnels}: ${vxlan_id}" >> map.txt
+	sysrc -qf map.txt tunnel+="${vxlan_id}"
 
 	MY_TUN="${_s1}.${_s2}.${vxlan_id}.${MY_ID}"
 	REMOTE_VXLAN_IP=$( get_vxlan_ip ${i} )
 	[ -z "${REMOTE_VXLAN_IP}" ] && err 1 "Unable to determine remote VXLAN for node id $i"
-	STR="ifconfig vxlan create vxlanid ${vxlan_id} vxlanlocal ${MY_VXLAN_IP} vxlanremote ${REMOTE_VXLAN_IP} inet ${MY_TUN}/24 mtu ${MTU} up"
+	vxlan_name="vxlan${vxlan_id}"
+	bridge_name="bridge${vxlan_id}"
+	STR="ifconfig ${vxlan_name} create vxlanid ${vxlan_id} vxlanlocal ${MY_VXLAN_IP} vxlanremote ${REMOTE_VXLAN_IP} inet ${MY_TUN}/24 mtu ${MTU} up"
 	REMOTE_TUN="${_s1}.${_s2}.${vxlan_id}.${i}"
-	echo "${STR}" >> map.txt
-	echo "Remote TUN IP: ${REMOTE_TUN}" >> map.txt
+	sysrc -qf map.txt ifconfig_str_${vxlan_id}="${STR}"
+	sysrc -qf map.txt remote_tun_ip_${vxlan_id}="${REMOTE_TUN}"
+
+	sysrc -qf map.txt vx_ifaces+="${vxlan_name}"
+	sysrc -qf map.txt br_ifaces+="${bridge_name}"
 
 	# run
 	VXLAN=$( ${STR} )
-	ifconfig ${VXLAN} down
-	ifconfig ${VXLAN} up
-	echo "${VXLAN}"
+	ifconfig ${vxlan_name} up
+	echo "${vxlan_name}"
+	ifconfig ${bridge_name} create
+	ifconfig ${bridge_name} addm ${vxlan_name}
+	ifconfig ${bridge_name} up
 done
 
 cat map.txt
