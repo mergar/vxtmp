@@ -76,7 +76,9 @@ for i in ${NEIGHBOR_NODES_ID}; do
 	REMOTE_VXLAN_IP=$( get_vxlan_ip ${i} )
 	[ -z "${REMOTE_VXLAN_IP}" ] && err 1 "Unable to determine remote VXLAN for node id $i"
 	STR="ifconfig vxlan create vxlanid 42 vxlanlocal ${MY_VXLAN_IP} vxlanremote ${REMOTE_VXLAN_IP} inet ${MY_TUN} mtu ${MTU} up"
+	REMOTE_TUN="${_s1}.${_s2}.${_s3}.${i}${MY_ID}"
 	echo "${STR}"
+	echo "Remote TUN IP: ${REMOTE_TUN}"
 done
 
 #MY_TUN_IP="10.10.10.2/24"
