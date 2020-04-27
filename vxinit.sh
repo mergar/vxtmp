@@ -79,6 +79,9 @@ for i in ${NEIGHBOR_NODES_ID}; do
 	REMOTE_TUN="${_s1}.${_s2}.${_s3}.${i}${MY_ID}"
 	echo "${STR}" >> map.txt
 	echo "Remote TUN IP: ${REMOTE_TUN}" >> map.txt
+
+	# run
+	${STR}
 done
 
 cat map.txt
