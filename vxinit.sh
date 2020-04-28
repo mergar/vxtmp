@@ -81,10 +81,10 @@ for i in ${NEIGHBOR_NODES_ID}; do
 	echo "Remote TUN IP: ${REMOTE_TUN}" >> map.txt
 
 	# run
-#	VXLAN=$( ${STR} )
-#	ifconfig ${VXLAN} down
-#	ifconfig ${VXLAN} up
-#	echo "${VXLAN}"
+	VXLAN=$( ${STR} )
+	ifconfig ${VXLAN} down
+	ifconfig ${VXLAN} up
+	echo "${VXLAN}"
 done
 
 cat map.txt
